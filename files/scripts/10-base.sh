@@ -16,8 +16,7 @@ dnf -y install \
     @multimedia \
     gstreamer1-plugins-{bad-free,bad-free-libs,good,base} \
     lame{,-libs} \
-    libjxl \
-    ffmpegthumbnailer
+    libjxl
 
 # ..from negativo
 #dnf config-manager --add-repo=https://negativo17.org/repos/epel-multimedia.repo
