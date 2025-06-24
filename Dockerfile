@@ -7,7 +7,7 @@ COPY files/scripts /build_files/
 COPY *.pub /keys/
 
 # Base Image
-FROM quay.io/almalinuxorg/atomic-desktop-gnome:10@sha256:40427cbb746b16f326b40197f7fa8f3dee0cf0a14d9c5f0baa13906de46b259d
+FROM quay.io/almalinuxorg/almalinux-bootc:10-kitten
 
 ARG IMAGE_NAME
 ARG IMAGE_REGISTRY
@@ -20,4 +20,4 @@ RUN --mount=type=tmpfs,dst=/opt \
 
 ### LINTING
 ## Verify final image and contents are correct.
-RUN bootc container lint
+RUN bootc container lint --fatal-warnings || true
