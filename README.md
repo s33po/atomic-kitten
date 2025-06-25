@@ -12,7 +12,7 @@ Built using the [AlmaLinux atomic-respin-template](https://github.com/AlmaLinux/
 - Switched the base image from the original [`atomic-desktop`](https://github.com/AlmaLinux/atomic-desktop) to the `kitten-10` `bootc` image  
 - Carried over most of the configuration from the original [`atomic-desktop`](https://github.com/AlmaLinux/atomic-desktop) base image  
 - Added multimedia codecs from Negativo17  
-- Removed rom Firefox and some default GNOME programs in favor of Flatpaks  
+- Removed rpm Firefox and some default GNOME programs in favor of Flatpaks  
 - Added virtualization support, VS Code, and an opinionated selection of tools, utilities, and fonts  
 - Added hibernation fixes from [`atomic-workstation`](https://github.com/AlmaLinux/atomic-workstation)  
 
