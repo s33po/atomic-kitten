@@ -9,7 +9,6 @@ COPY *.pub /keys/
 # Base Image
 FROM quay.io/almalinuxorg/almalinux-bootc@sha256:17ea1210b923989e3af2cc812b204cbf6fdcb4000d74f52e35b120e9fccf8641
 
-
 ARG IMAGE_NAME
 ARG IMAGE_REGISTRY
 ARG VARIANT
@@ -21,4 +20,4 @@ RUN --mount=type=tmpfs,dst=/opt \
 
 ### LINTING
 ## Verify final image and contents are correct.
-RUN bootc container lint --fatal-warnings || true
+RUN bootc container lint

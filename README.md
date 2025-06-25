@@ -1,41 +1,32 @@
-# ⚛️ Atomic Kitten 🐱
+# Atomic Kitten 🐱
 
-An opinionated atomic workstation based on the AlmaLinux OS Kitten 10 bootc image.
+An opinionated atomic workstation based on the AlmaLinux OS Kitten 10 `bootc` image.
 
-_Intended for personal use and testing only._ Built using the [AlmaLinux atomic-respin-template](https://github.com/AlmaLinux/atomic-respin-template).
+**Intended for personal use and testing only.**
+
+Built using the [AlmaLinux atomic-respin-template](https://github.com/AlmaLinux/atomic-respin-template).
 
 
-## Key changes 🏗️
+## Key changes from the template
 
-- Switched the base image from the original [`atomic-desktop`](https://github.com/AlmaLinux/atomic-desktop) to the `kitten-10` bootc image  
+- Switched the base image from the original [`atomic-desktop`](https://github.com/AlmaLinux/atomic-desktop) to the `kitten-10` `bootc` image  
 - Carried over most of the configuration from the original [`atomic-desktop`](https://github.com/AlmaLinux/atomic-desktop) base image  
-- Included multimedia codecs from EPEL (Negativo17 as a secondary source)  
-- Minimal GNOME base (from [`Bluefin LTS`](https://github.com/ublue-os/bluefin-lts)) instead of the full `@workstation` install  
-- Added virtualization support (QEMU/KVM) and VSCodium  
-- Integrated settings and features like hibernation from [`atomic-workstation`](https://github.com/AlmaLinux/atomic-workstation)  
-- Added an opinionated selection of basic tools, utilities, and fonts  
-- Installs a small, opinionated set of system Flatpaks on first boot  
+- Added multimedia codecs from Negativo17  
+- Removed rom Firefox and some default GNOME programs in favor of Flatpaks  
+- Added virtualization support, VS Code, and an opinionated selection of tools, utilities, and fonts  
+- Added hibernation fixes from [`atomic-workstation`](https://github.com/AlmaLinux/atomic-workstation)  
 
 
-## Planned changes 🚧  
+## Experimenting
 
-- Re-evaluate the use of [`Bluefin LTS`](https://github.com/ublue-os/bluefin-lts)’s minimal GNOME base — possibly switch back to a full `@workstation` install and remove unnecessary programs  
-- Backport GNOME 48 from COPR  
-- Consider including Steam in the image to avoid Flatpak-related Steam issues — probably not feasible 🤔  
+- Backported GNOME 48 from COPR  
+- Adding Steam in to the image – probably not feasible..
 
 
 ## ⚠️ This WILL break — do not use ⚠️
 
-Instead, use the [`atomic-respin-template`](https://github.com/AlmaLinux/atomic-respin-template) to create your own repo, stick with AlmaLinux’s official [`atomic-desktop`](https://github.com/AlmaLinux/atomic-desktop) builds, or explore Fedora-based alternatives:
+Instead, use the [`atomic-respin-template`](https://github.com/AlmaLinux/atomic-respin-template) to create your own repo, stick with AlmaLinux’s official [`atomic-desktop`](https://github.com/AlmaLinux/atomic-desktop) builds, or explore other alternatives:
 
 - [Fedora Atomic Desktops](https://fedoraproject.org/atomic-desktops/)  
-- [Universal Blue (uBlue)](https://universal-blue.org/)
-
-You may also be interested in [HeliumOS](https://heliumos.org/) — an AlmaLinux-based atomic operating system with a KDE desktop and long-term support.
-
-
-## Resources 📚
-
-- [AlmaLinux Atomic SIG](https://wiki.almalinux.org/sigs/Atomic.html)  
-- [bootc documentation](https://github.com/containers/bootc)  
-- [Podman documentation](https://podman.io/)  
+- [Universal Blue (uBlue)](https://universal-blue.org/)  
+- [HeliumOS](https://heliumos.org/)
