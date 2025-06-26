@@ -8,7 +8,6 @@ dnf autoremove -y \
 
 # Install stuff
 dnf -y install \
-   steam-devices \
    distrobox \
    buildah \
    fastfetch \
