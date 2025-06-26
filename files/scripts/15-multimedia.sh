@@ -6,7 +6,5 @@ set -xeuo pipefail
 dnf -y install \
     @multimedia \
     gstreamer1-plugins-{base,bad-free-libs} \
-    ffmpegthumbnailer \
     lame{,-libs} \
     libjxl
-    
