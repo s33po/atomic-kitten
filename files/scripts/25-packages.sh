@@ -12,6 +12,7 @@ dnf autoremove -y \
 # Install stuff
 dnf -y install \
    steam-devices \
+   python3-ramalama \
    distrobox \
    buildah \
    fastfetch \
@@ -38,17 +39,6 @@ dnf -y install \
   -x gnome-extensions-app \
    gnome-shell-extension-{blur-my-shell,caffeine,appindicator} \
 
-# Virtualization
-
-# Ensure 'kvm' group exists before installing QEMU
-getent group kvm >/dev/null || groupadd -r kvm
-
-dnf -y install \
-  qemu-kvm \
-  libvirt \
-  virt-install \
-  virt-manager \
-  virt-viewer
 
 # ----------External repos----------
 

@@ -20,7 +20,6 @@ org.gtk.Gtk3theme.adw-gtk3-dark
 org.mozilla.firefox
 com.github.neithern.g4music
 io.github.spacingbat3.webcord
-org.libreoffice.LibreOffice
 io.mpv.Mpv
 it.mijorus.gearlever
 org.nickvision.tubeconverter
