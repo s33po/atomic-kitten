@@ -26,7 +26,7 @@ jobs:
       REGISTRY_USER: ${{ steps.set.outputs.REGISTRY_USER }}
       PLATFORMS: ${{ steps.set.outputs.PLATFORMS }}
       IMAGE_PATH: ${{ steps.set.outputs.IMAGE_PATH }}
-      IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
+      IMAGE_NAME: ${{ steps.set.outputs.IMAGE_NAME }}
       IMAGE_REF: ${{ steps.set.outputs.IMAGE_REF }}
       IS_SIGNED: ${{ steps.set.outputs.IS_SIGNED }}
     steps:
@@ -38,15 +38,6 @@ jobs:
         id: set
         with:
           SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
-
-      - name: Set IMAGE_NAME with branch suffix
-        id: image_name
-        run: |
-          if [[ "${GITHUB_REF##*/}" == "main" ]]; then
-            echo "IMAGE_NAME=atomic-kitten" >> $GITHUB_OUTPUT
-          else
-            echo "IMAGE_NAME=atomic-kitten-${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
-          fi
 
   build-image:
     name: Build image
@@ -104,7 +95,6 @@ jobs:
     with:
       image: ${{ needs.build-image.outputs.image-ref }}@${{ needs.build-image.outputs.digest }}
       tag: |
-        latest
         ${{ needs.set-env.outputs.LATEST_TAG }}
         ${{ github.sha }}
         ${{ needs.build-image.outputs.major-version }}
@@ -125,6 +115,6 @@ jobs:
       image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"
       version: ${{ needs.build-image.outputs.version }}
       pretty-version: ${{ needs.build-image.outputs.redhat-version-id }}
-      latest-image-ref: "${{ needs.build-image.outputs.image-ref }}:latest"
+      latest-image-ref: "${{ needs.build-image.outputs.image-ref }}:${{ needs.set-env.outputs.LATEST_TAG }}"
     permissions:
       contents: write
