@@ -104,7 +104,9 @@ jobs:
     with:
       image: ${{ needs.build-image.outputs.image-ref }}@${{ needs.build-image.outputs.digest }}
       tag: |
+        latest
         ${{ needs.set-env.outputs.LATEST_TAG }}
+        ${{ github.sha }}
         ${{ needs.build-image.outputs.major-version }}
         ${{ needs.build-image.outputs.redhat-version-id }}
         ${{ needs.build-image.outputs.version }}
@@ -123,6 +125,6 @@ jobs:
       image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"
       version: ${{ needs.build-image.outputs.version }}
       pretty-version: ${{ needs.build-image.outputs.redhat-version-id }}
-      latest-image-ref: "${{ needs.build-image.outputs.image-ref }}:${{ needs.set-env.outputs.LATEST_TAG }}"
+      latest-image-ref: "${{ needs.build-image.outputs.image-ref }}:latest"
     permissions:
       contents: write
