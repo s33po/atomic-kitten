@@ -39,12 +39,8 @@ runs:
       id: set
       shell: bash
       run: |
-        # Pick a latest tag based on the event type
-        if [[ "${{ github.ref }}" != "refs/heads/${{ github.event.repository.default_branch }}" ]]; then
-          echo "LATEST_TAG=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-        else
-          echo "LATEST_TAG=latest" >> $GITHUB_OUTPUT
-        fi
+        # Always use branch name as LATEST_TAG for all branches
+        echo "LATEST_TAG=${{ github.ref_name }}" >> $GITHUB_OUTPUT
 
         REGISTRY=ghcr.io
         REGISTRY_USER=${{ github.actor }}
