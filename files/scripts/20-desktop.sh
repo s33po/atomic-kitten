@@ -8,8 +8,8 @@ dnf -y install glib2
 
 dnf install -y \
     @"Workstation" \
-    @"Virtualization Host" \
-
+    @"Virtualization Host" 
+    
 systemctl enable gdm
 systemctl set-default graphical.target
 
