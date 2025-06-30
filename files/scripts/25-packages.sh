@@ -18,26 +18,20 @@ dnf -y install \
    zsh \
    fzf \
    tmux \
-   wl-clipboard \
+   python3-ramalama \
    jetbrains-mono-fonts-all \
    google-noto-sans-fonts \
-   google-noto-color-emoji-fonts \
    powerline-fonts \
-   systemd-{resolved,container,oomd}
-
-# GNOME extensions
-dnf -y install \
-  -x gnome-extensions-app \
-   gnome-shell-extension-{blur-my-shell,caffeine,appindicator} \
 
 # VSCode
 dnf config-manager --add-repo "https://packages.microsoft.com/yumrepos/vscode"
 dnf config-manager --set-disabled packages.microsoft.com_yumrepos_vscode
-update-crypto-policies --set LEGACY
-rpm --import https://packages.microsoft.com/keys/microsoft.asc
-dnf -y --enablerepo packages.microsoft.com_yumrepos_vscode install code
-update-crypto-policies --set DEFAULT
+dnf -y --enablerepo packages.microsoft.com_yumrepos_vscode --nogpgcheck  install code
 
 # Disable lastlog display on previous failed login in GDM (This makes logins slow)
 authselect enable-feature with-silent-lastlog
+
+# Enable podman-socket
+systemctl enable podman.socket
+
 
