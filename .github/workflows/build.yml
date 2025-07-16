@@ -8,6 +8,7 @@ on:
       - 'main'
       - 'a10'
       - 'g48'
+
     paths-ignore:
       - '**/README.md'
   workflow_dispatch:
@@ -44,7 +45,7 @@ jobs:
     uses: AlmaLinux/atomic-ci/.github/workflows/build-image.yml@v6
     needs: set-env
     with:
-      image-description: "My AlmaLinux Atomic Respin"
+      image-description: "Atomic Kitten"
       containerfile: Dockerfile
       image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"
       previous-image: "${{ needs.set-env.outputs.IMAGE_REF }}:latest"
@@ -91,12 +92,12 @@ jobs:
   promote-image:
     name: Promote image
     needs: [set-env, build-image, test-image]
+    if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
     uses: AlmaLinux/atomic-ci/.github/workflows/retag-image.yml@v6
     with:
       image: ${{ needs.build-image.outputs.image-ref }}@${{ needs.build-image.outputs.digest }}
       tag: |
         ${{ needs.set-env.outputs.LATEST_TAG }}
-        ${{ github.sha }}
         ${{ needs.build-image.outputs.major-version }}
         ${{ needs.build-image.outputs.redhat-version-id }}
         ${{ needs.build-image.outputs.version }}
@@ -110,6 +111,7 @@ jobs:
   create-release:
     name: Create Release
     needs: [set-env, build-image, test-image, promote-image]
+    if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
     uses: AlmaLinux/atomic-ci/.github/workflows/create-release.yml@v6
     with:
       image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"

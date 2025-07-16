@@ -39,23 +39,22 @@ runs:
       id: set
       shell: bash
       run: |
-        # Always use branch name as LATEST_TAG for all branches
-        echo "LATEST_TAG=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+        # Pick a latest tag based on the event type
+        if [[ "${{ github.ref }}" != "refs/heads/${{ github.event.repository.default_branch }}" ]]; then
+          echo "LATEST_TAG=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+        else
+          echo "LATEST_TAG=latest" >> $GITHUB_OUTPUT
+        fi
 
         REGISTRY=ghcr.io
         REGISTRY_USER=${{ github.actor }}
         IMAGE_PATH=${{ github.repository_owner }}
+        IMAGE_NAME=${{ github.event.repository.name }}
         PLATFORMS="amd64"
 
         echo "REGISTRY=${REGISTRY}" >> $GITHUB_OUTPUT
         echo "REGISTRY_USER=${REGISTRY_USER}" >> $GITHUB_OUTPUT
         echo "IMAGE_PATH=${IMAGE_PATH}" >> $GITHUB_OUTPUT
-        # Set IMAGE_NAME based on branch (main = repo name, else repo name + branch)
-        if [[ "${GITHUB_REF##*/}" == "main" ]]; then
-          IMAGE_NAME="${{ github.event.repository.name }}"
-        else
-          IMAGE_NAME="${{ github.event.repository.name }}-${GITHUB_REF##*/}"
-        fi
         echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_OUTPUT
         echo "IMAGE_REF=${REGISTRY}/${IMAGE_PATH}/${IMAGE_NAME}" >> $GITHUB_OUTPUT
         echo "PLATFORMS=${PLATFORMS}" >> $GITHUB_OUTPUT
