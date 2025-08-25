@@ -4,6 +4,9 @@ version: 2
 updates:
 
   # Maintain dependencies for GitHub Actions
+version: 2
+updates:
+  # Maintain dependencies for GitHub Actions (main)
   - package-ecosystem: "github-actions"
     directories:
       - '/'
@@ -12,14 +15,39 @@ updates:
       interval: "daily"
       time: "07:00"
     open-pull-requests-limit: 5
+    target-branch: "main"
 
-  # Maintain dependencies for Docker
+  # Maintain dependencies for GitHub Actions (g48)
+  - package-ecosystem: "github-actions"
+    directories:
+      - '/'
+      - '/.github/actions/**/*'
+    schedule:
+      interval: "daily"
+      time: "07:00"
+    open-pull-requests-limit: 5
+    target-branch: "g48"
+
+  # Maintain dependencies for Docker (main)
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "daily"
       time: "07:00"
     open-pull-requests-limit: 5
+    target-branch: "main"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+
+  # Maintain dependencies for Docker (g48)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "07:00"
+    open-pull-requests-limit: 5
+    target-branch: "g48"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-minor", "version-update:semver-patch"]
