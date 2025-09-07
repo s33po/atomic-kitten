@@ -27,16 +27,19 @@ POLICY_FILE="${CONTAINER_DIR}/policy.json"
 jq --arg image_registry "${IMAGE_REGISTRY}" \
    --arg image_name "${IMAGE_NAME}" \
    --arg pki_path "${CONTAINER_PKI}/${IMAGE_NAME_FILE}.pub" \
+   --arg pki_backup "${CONTAINER_PKI}/${BACKUP_KEY}.pub" \
    '.transports.docker |=
     { ($image_registry + "/" + $image_name): [
         {
             "type": "sigstoreSigned",
-            "keyPath": $pki_path,
+            "keyPaths": [$pki_path, $pki_backup],
             "signedIdentity": {
                 "type": "matchRepository"
             }
         }
-    ] }
+      ],
+      "": [{ "type": "insecureAcceptAnything"}]
+    }
     + .
     | .transports *= (["docker-daemon", "containers-storage", "dir", "oci", "oci-archive", "docker-archive", "tarball"]
         | map({(.): {"": [{"type": "insecureAcceptAnything"}]}})
