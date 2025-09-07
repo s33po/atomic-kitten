@@ -27,12 +27,11 @@ POLICY_FILE="${CONTAINER_DIR}/policy.json"
 jq --arg image_registry "${IMAGE_REGISTRY}" \
    --arg image_name "${IMAGE_NAME}" \
    --arg pki_path "${CONTAINER_PKI}/${IMAGE_NAME_FILE}.pub" \
-   --arg pki_backup "${CONTAINER_PKI}/${BACKUP_KEY}.pub" \
    '.transports.docker |=
     { ($image_registry + "/" + $image_name): [
         {
             "type": "sigstoreSigned",
-            "keyPaths": [$pki_path, $pki_backup],
+            "keyPath": $pki_path,
             "signedIdentity": {
                 "type": "matchRepository"
             }
