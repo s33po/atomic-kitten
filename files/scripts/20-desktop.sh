@@ -2,7 +2,7 @@
 
 set -xeuo pipefail
 
-dnf install -y \
+dnf -y install \
     @"Workstation" \
     @"Virtualization Host" 
     
@@ -11,3 +11,4 @@ systemctl set-default graphical.target
 
 dnf -y remove \
     setroubleshoot
+    
