@@ -1,4 +1,11 @@
-# Atomic Kitten Workstation
+## ⚠️ Deprecated – Replaced by: [knarrOS](https://github.com/s33po/knarros)
+
+This was my first experimental `bootc` build.  
+It has now been **deprecated** in favor of my more polished, CentOS Stream-based image: [**knarrOS**](https://github.com/s33po/knarros).
+
+---
+
+### Atomic Kitten Workstation
 
 An opinionated atomic workstation based on the AlmaLinux OS 10 Kitten `bootc` image.
 
