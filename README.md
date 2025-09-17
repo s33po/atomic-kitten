@@ -1,4 +1,4 @@
-### Atomic Kitten Workstation
+## Atomic Kitten Workstation
 
 An opinionated atomic workstation based on the AlmaLinux OS 10 Kitten `bootc` image.
 
