@@ -16,7 +16,7 @@ dnf versionlock clear
 ## dnf -y install centos-release-kmods-kernel-6.18
 
 rpm --import https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-Kmods
-dnf install https://mirror.stream.centos.org/SIGs/$(rpm --eval '%{?rhel}/kmods/%{_arch}/repos-main/Packages/c/centos-repos-kmods-%{?rhel}-2.el%{?rhel}.noarch.rpm')
+dnf -y install https://mirror.stream.centos.org/SIGs/$(rpm --eval '%{?rhel}/kmods/%{_arch}/repos-main/Packages/c/centos-repos-kmods-%{?rhel}-2.el%{?rhel}.noarch.rpm')
 
 dnf -y install centos-release-kmods-kernel
 
