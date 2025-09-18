@@ -15,6 +15,9 @@ dnf versionlock clear
 ## I don’t plan to use the pinned mainline kernel long-term and will switch to the next LTS kernel (most likely 6.18) when it becomes available from kmods.
 ## dnf -y install centos-release-kmods-kernel-6.18
 
+rpm --import https://www.centos.org/keys/RPM-GPG-KEY-CentOS-SIG-Kmods
+dnf install https://mirror.stream.centos.org/SIGs/$(rpm --eval '%{?rhel}/kmods/%{_arch}/repos-main/Packages/c/centos-repos-kmods-%{?rhel}-2.el%{?rhel}.noarch.rpm')
+
 dnf -y install centos-release-kmods-kernel
 
 ARCH=$(uname -m)
