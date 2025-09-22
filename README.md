@@ -18,15 +18,13 @@ An opinionated atomic workstation based on the AlmaLinux OS 10 Kitten `bootc` im
 
 
 &nbsp;<br>
-___
-&nbsp;<br>
 
 **This image is intended only for my personal use**
 
 While it's still somewhat experimental, it has been stable enough to serve as my daily driver for couple of months without major issues.
 
 &nbsp;<br>
-___
+---
 &nbsp;<br>
 
 <p align="center">
