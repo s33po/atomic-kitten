@@ -1,4 +1,3 @@
-# ba0fde3d-bee7-4307-b97b-17d0d20aff50
 # Allow build scripts to be referenced without being copied into the final image
 FROM scratch AS ctx
 
@@ -7,7 +6,7 @@ COPY files/scripts /build_files/
 COPY *.pub /keys/
 
 # Base Image
-FROM quay.io/almalinuxorg/almalinux-bootc:10-kitten@sha256:7dc26ac7719fcc5bc5c795da5a8d30c43f2340c7dcfbd84695c6dfc636dfc60a
+FROM quay.io/almalinuxorg/almalinux-bootc:10-kitten@sha256:368cac68c25fc5f1aa330803fda313da93624911965fbad7481386500a64df92
 
 ARG IMAGE_NAME
 ARG IMAGE_REGISTRY

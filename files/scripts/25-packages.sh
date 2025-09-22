@@ -2,13 +2,11 @@
 
 set -xeuo pipefail
 
-# Remove firefox
-dnf autoremove -y \
-    firefox \
-    PackageKit
-
 # Install stuff
 dnf -y install \
+   powertop \
+   fuse \
+   steam-devices \
    distrobox \
    buildah \
    fastfetch \
@@ -20,21 +18,32 @@ dnf -y install \
    fzf \
    tmux \
    fpaste \
-   python3-ramalama \
+   uv \
+   ramalama \
+   cockpit-podman
+
+# Fonts
+dnf -y install \
    jetbrains-mono-fonts \
    google-noto-sans-fonts \
-   powerline-fonts \
+   powerline-fonts
+
+# Virtualization
+dnf group install -y \
+	"Virtualization Host"
+
+dnf -y install \
+  libvirt \
+  libvirt-daemon-kvm \
+  libvirt-nss \
+  virt-install \
+  virt-manager \
+  cockpit-machines
+  
+
+### External repos ###
 
 # VSCode
 dnf config-manager --add-repo "https://packages.microsoft.com/yumrepos/vscode"
 dnf config-manager --set-disabled packages.microsoft.com_yumrepos_vscode
 dnf -y --enablerepo packages.microsoft.com_yumrepos_vscode --nogpgcheck  install code
-
-# Disable lastlog display on previous failed login in GDM (This makes logins slow)
-authselect enable-feature with-silent-lastlog
-
-# Enable services
-systemctl enable podman.socket
-systemctl enable bootc-fetch-apply-updates.service
-systemctl enable firewalld
-
