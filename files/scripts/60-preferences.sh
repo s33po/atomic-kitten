@@ -33,7 +33,7 @@ document-font-name='Noto Sans 11'
 monospace-font-name='JetBrains Mono 12'
 icon-theme='Adwaita'
 cursor-theme='Adwaita'
-accent-color='slate'
+accent-color='blue'
 clock-format='24h'
 clock-show-weekday=true
 

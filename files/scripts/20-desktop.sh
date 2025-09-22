@@ -2,11 +2,11 @@
 
 set -xeuo pipefail
 
-### TESTING: GNOME 48 backport from HyperScale SIG ###
+# Backported GNOME 48 from HyperScale SIG
 dnf -y copr enable @centoshyperscale/c10s-gnome-48
 dnf -y install glib2
 
-# Enable Negativo17 Multimedia codecs repository
+# Add Negativo17 for multimedia codecs
 dnf config-manager --add-repo=https://negativo17.org/repos/epel-multimedia.repo
 dnf config-manager --set-disabled epel-multimedia
 
@@ -27,9 +27,10 @@ dnf -y install --enablerepo=epel-multimedia \
     ffmpegthumbnailer \
     libheif \
     libwebp \
-    webp-pixbuf-loader
+    webp-pixbuf-loader \
+    avif-pixbuf-loader
 
-# "Workstation" without PackageKit
+# "Workstation" package group includes all the basics for a desktop system
 dnf group install -y \
 	"Workstation"
 
@@ -40,4 +41,5 @@ dnf -y install \
 systemctl enable gdm
 systemctl set-default graphical.target
 
+# Remove some unnecessary packages
 dnf -y autoremove setroubleshoot console-login-helper-messages PackageKit redhat-flatpak-repo firefox

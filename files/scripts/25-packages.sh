@@ -20,7 +20,6 @@ dnf -y install \
    fpaste \
    uv \
    ramalama \
-   systemd-container \
    cockpit-podman
 
 # Fonts
@@ -30,6 +29,9 @@ dnf -y install \
    powerline-fonts
 
 # Virtualization
+dnf group install -y \
+	"Virtualization Host"
+
 dnf -y install \
   libvirt \
   libvirt-daemon-kvm \
