@@ -32,14 +32,14 @@ dnf -y install --enablerepo=epel-multimedia \
 
 # "Workstation" package group includes all the basics for a desktop system
 dnf group install -y \
-	"Workstation"
+    "Workstation"
 
 dnf -y install \
-	systemd-container \
-  	system-reinstall-bootc
+    systemd-container \
+    system-reinstall-bootc
 
 systemctl enable gdm
 systemctl set-default graphical.target
 
 # Remove some unnecessary packages
-dnf -y autoremove setroubleshoot console-login-helper-messages PackageKit redhat-flatpak-repo firefox
+dnf -y remove setroubleshoot console-login-helper-messages PackageKit redhat-flatpak-repo firefox

@@ -16,7 +16,6 @@ An opinionated atomic workstation based on the AlmaLinux OS 10 Kitten `bootc` im
 - Some pre-configured system-wide settings and bash aliases (including `defpaks` to install default flatpaks)  
 - `lts` branch with the default 6.12 kernel and a bit more "vanilla" setup  
 
-
 &nbsp;<br>
 
 **This image is intended only for my personal use**
