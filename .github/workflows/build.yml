@@ -6,8 +6,7 @@ on:
   push:
     branches:
       - 'main'
-      - 'a10'
-      - 'g48'
+      - 'lts'
 
     paths-ignore:
       - '**/README.md'
