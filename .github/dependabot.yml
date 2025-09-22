@@ -28,7 +28,7 @@ updates:
       prefix: "actions"
     target-branch: "main"
 
-  # Base image updates for g48
+  # Base image updates for lts
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
@@ -42,9 +42,9 @@ updates:
         update-types:
           - "version-update:semver-minor"
           - "version-update:semver-patch"
-    target-branch: "g48"
+    target-branch: "lts"
 
-  # GitHub Actions updates for g48
+  # GitHub Actions updates for lts
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -54,4 +54,4 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "actions"
-    target-branch: "g48"
+    target-branch: "lts"
