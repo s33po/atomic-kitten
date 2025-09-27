@@ -2,10 +2,12 @@
 
 set -xeuo pipefail
 
-# Remove firefox
-dnf autoremove -y \
+# Remove fluff
+dnf remove -y \
     firefox \
-    PackageKit
+    PackageKit \
+    console-login-helper-messages \
+    redhat-flatpak-repo
 
 # Install stuff
 dnf -y install \
@@ -22,6 +24,14 @@ dnf -y install \
    fpaste \
    ramalama
 
+# Virtualization
+dnf -y install \
+  libvirt \
+  libvirt-daemon-kvm \
+  libvirt-nss \
+  virt-install \
+  virt-manager
+
 # Fonts
 dnf -y install \
     jetbrains-mono-fonts \
@@ -37,6 +47,7 @@ dnf -y --enablerepo packages.microsoft.com_yumrepos_vscode --nogpgcheck  install
 authselect enable-feature with-silent-lastlog
 
 # Enable services
-systemctl enable podman.socket
-systemctl enable bootc-fetch-apply-updates.service
+systemctl enable bootc-fetch-apply-updates.timer
 systemctl enable firewalld
+systemctl enable podman.socket
+systemctl enable libvirtd.service
