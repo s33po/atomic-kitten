@@ -5,8 +5,6 @@ set -xeuo pipefail
 # Multimedia codecs
 dnf -y install \
     @multimedia \
-    ffmpeg \
-    libavcodec \
     ffmpegthumbnailer \
     gstreamer1-plugins-{base,bad-free-libs} \
     lame{,-libs} \
@@ -14,4 +12,5 @@ dnf -y install \
     libheif \
     libwebp \
     webp-pixbuf-loader \
+    gdk-pixbuf2-modules-extra \
     avif-pixbuf-loader
