@@ -6,4 +6,4 @@ dnf install -y 'dnf-command(config-manager)' epel-release
 dnf config-manager --set-enabled crb
 dnf upgrade -y epel-release
 
-dnf install -y system-reinstall-bootc powertop fuse steam-devices
+dnf install -y system-reinstall-bootc powertop fuse steam-devices systemd-container
