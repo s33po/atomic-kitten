@@ -20,10 +20,13 @@ dnf -y install \
    fzf \
    tmux \
    fpaste \
-   python3-ramalama \
-   jetbrains-mono-fonts \
-   google-noto-sans-fonts \
-   powerline-fonts \
+   ramalama
+
+# Fonts
+dnf -y install \
+    jetbrains-mono-fonts \
+    google-noto-sans-fonts \
+    powerline-fonts
 
 # VSCode
 dnf config-manager --add-repo "https://packages.microsoft.com/yumrepos/vscode"
@@ -37,4 +40,3 @@ authselect enable-feature with-silent-lastlog
 systemctl enable podman.socket
 systemctl enable bootc-fetch-apply-updates.service
 systemctl enable firewalld
-
