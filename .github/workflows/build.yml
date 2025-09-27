@@ -119,5 +119,7 @@ jobs:
       version: ${{ needs.build-image.outputs.version }}
       pretty-version: ${{ needs.build-image.outputs.redhat-version-id }}
       latest-image-ref: "${{ needs.build-image.outputs.image-ref }}:${{ needs.set-env.outputs.LATEST_TAG }}"
+      download-sbom: false
+      compress-sbom: false
     permissions:
       contents: write
