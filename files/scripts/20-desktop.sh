@@ -32,7 +32,8 @@ dnf -y install --enablerepo=epel-multimedia \
     avif-pixbuf-loader
 
 # "Workstation" package group with some trimmings
-dnf -y group install "Workstation" \
+dnf -y install "@Workstation" \
+    -x redhat-flatpak-repo
     -x setroubleshoot \
     -x console-login-helper-messages \
     -x PackageKit \
