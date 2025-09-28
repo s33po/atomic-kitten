@@ -99,8 +99,6 @@ jobs:
           extra-args: |
             --pull=always
             --security-opt=label=disable
-            --tmpfs=/tmp:rw,noexec,nosuid
-            --tmpfs=/var/tmp:rw,noexec,nosuid
           build-args: |
             IMAGE_NAME=${{ env.IMAGE_NAME }}
             IMAGE_REGISTRY=${{ env.IMAGE_REGISTRY }}
