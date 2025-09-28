@@ -1,123 +1,172 @@
 ---
-# ba0fde3d-bee7-4307-b97b-17d0d20aff50
 name: Build image
 on:
   pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '05 05 * * *'  # 05:05am UTC everyday
   push:
     branches:
-      - 'main'
-      - 'lts'
-
+      - main
     paths-ignore:
       - '**/README.md'
   workflow_dispatch:
+
+env:
+  IMAGE_DESC: "Atomic Kitten"
+  IMAGE_KEYWORDS: "bootc,alma,kitten"
+  IMAGE_LOGO_URL: "https://avatars.githubusercontent.com/u/217563541?v=4"  
+  IMAGE_NAME: "${{ github.event.repository.name }}"  # output image name, usually same as repo name
+  IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"  # do not edit
+  DEFAULT_TAG: "latest"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-  set-env:
-    if: github.repository != 'AlmaLinux/atomic-respin-template'
-    runs-on: ubuntu-latest
-    outputs:
-      LATEST_TAG: ${{ steps.set.outputs.LATEST_TAG }}
-      REGISTRY: ${{ steps.set.outputs.REGISTRY }}
-      REGISTRY_USER: ${{ steps.set.outputs.REGISTRY_USER }}
-      PLATFORMS: ${{ steps.set.outputs.PLATFORMS }}
-      IMAGE_PATH: ${{ steps.set.outputs.IMAGE_PATH }}
-      IMAGE_NAME: ${{ steps.set.outputs.IMAGE_NAME }}
-      IMAGE_REF: ${{ steps.set.outputs.IMAGE_REF }}
-      IS_SIGNED: ${{ steps.set.outputs.IS_SIGNED }}
-    steps:
-      - name: Checkout github actions
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
+  build_push:
+    name: Build and push image
+    runs-on: ubuntu-24.04
 
-      - name: Set environment variables
-        uses: ./.github/actions/config
-        id: set
-        with:
-          SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
-
-  build-image:
-    name: Build image
-    uses: AlmaLinux/atomic-ci/.github/workflows/build-image.yml@v8
-    needs: set-env
-    with:
-      image-description: "Atomic Kitten"
-      containerfile: Dockerfile
-      image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"
-      previous-image: "${{ needs.set-env.outputs.IMAGE_REF }}:latest"
-      platforms: ${{ needs.set-env.outputs.PLATFORMS }}
-      skip-maximize-build-space: true
-      image-path: ${{ needs.set-env.outputs.IMAGE_PATH }}
-      REGISTRY: ${{ needs.set-env.outputs.REGISTRY }}
-      REGISTRY_USER: ${{ needs.set-env.outputs.REGISTRY_USER }}
-      generate-sbom: false
-    secrets:
-      REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
     permissions:
       contents: read
       packages: write
       id-token: write
 
-  test-image:
-    name: Test image
-    runs-on: ubuntu-latest
-    needs: [set-env, build-image]
-
-    env:
-      IMAGE_REF: "${{ needs.build-image.outputs.image-ref }}@${{ needs.build-image.outputs.digest }}"
-
     steps:
-      - name: Login to Container Registry
-        run: echo ${{ secrets.GITHUB_TOKEN }} | podman login -u ${{ needs.set-env.outputs.REGISTRY_USER }} --password-stdin ${{ needs.set-env.outputs.REGISTRY }}
-
-      - name: Test container
+      - name: Prepare environment
         run: |
-          # Create a short script to test the image using heredoc
-          cat << 'EOF' > /tmp/test.sh
-          set -ex
+          # Lowercase the image uri
+          echo "IMAGE_REGISTRY=${IMAGE_REGISTRY,,}" >> ${GITHUB_ENV}
+          echo "IMAGE_NAME=${IMAGE_NAME,,}" >> ${GITHUB_ENV}
 
-          cat /etc/os-release
-          bootc -V
-          EOF
+      # These stage versions are pinned by https://github.com/renovatebot/renovate
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
 
-          podman run --rm \
-            -v /tmp/test.sh:/tmp/test.sh \
-            ${{ env.IMAGE_REF }} \
-            /bin/bash /tmp/test.sh
+      - name: Get current date
+        id: date
+        run: |
+          # This generates a timestamp like what is defined on the ArtifactHub documentation
+          # E.G: 2022-02-08T15:38:15Z'
+          # https://artifacthub.io/docs/topics/repositories/container-images/
+          # https://linux.die.net/man/1/date
+          echo "date=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)" >> $GITHUB_OUTPUT
 
-  promote-image:
-    name: Promote image
-    needs: [set-env, build-image, test-image]
-    if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
-    uses: AlmaLinux/atomic-ci/.github/workflows/retag-image.yml@v8
-    with:
-      image: ${{ needs.build-image.outputs.image-ref }}
-      digest: ${{ needs.build-image.outputs.digest }}
-      tag: |
-        ${{ needs.set-env.outputs.LATEST_TAG }}
-        ${{ needs.build-image.outputs.major-version }}
-        ${{ needs.build-image.outputs.redhat-version-id }}
-        ${{ needs.build-image.outputs.version }}
-      REGISTRY: ${{ needs.set-env.outputs.REGISTRY }}
-      REGISTRY_USER: ${{ needs.set-env.outputs.REGISTRY_USER }}
-    secrets:
-      REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    permissions:
-      packages: write
+      # Image metadata for https://artifacthub.io/ - This is optional but is highly recommended so we all can get a index of all the custom images
+      # The metadata by itself is not going to do anything, you choose if you want your image to be on ArtifactHub or not.
+      - name: Image Metadata
+        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # v5
+        id: metadata
+        with:
+          # This generates all the tags for your image, you can add custom tags here too!
+          # Default tags are "$DEFAULT_TAG" and "$DEFAULT_TAG.$date".
+          tags: |
+            type=raw,value=${{ env.DEFAULT_TAG }}
+            type=raw,value=${{ env.DEFAULT_TAG }}.{{date 'YYYYMMDD'}}
+            type=raw,value={{date 'YYYYMMDD'}}
+            type=sha,enable=${{ github.event_name == 'pull_request' }}
+            type=ref,event=pr
+          labels: |
+            io.artifacthub.package.readme-url=https://raw.githubusercontent.com/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}/refs/heads/main/README.md
+            org.opencontainers.image.created=${{ steps.date.outputs.date }}
+            org.opencontainers.image.description=${{ env.IMAGE_DESC }}
+            org.opencontainers.image.documentation=https://raw.githubusercontent.com/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}/refs/heads/main/README.md
+            org.opencontainers.image.source=https://github.com/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}/blob/main/Containerfile
+            org.opencontainers.image.title=${{ env.IMAGE_NAME }}
+            org.opencontainers.image.url=https://github.com/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+            org.opencontainers.image.vendor=${{ github.repository_owner }}
+            org.opencontainers.image.version=${{ env.DEFAULT_TAG }}.{{date 'YYYYMMDD'}}
+            io.artifacthub.package.deprecated=false
+            io.artifacthub.package.keywords=${{ env.IMAGE_KEYWORDS }}
+            io.artifacthub.package.license=Apache-2.0
+            io.artifacthub.package.logo-url=${{ env.IMAGE_LOGO_URL }}
+            io.artifacthub.package.prerelease=false
+            containers.bootc=1
+          sep-tags: " "
+          sep-annotations: " "
 
-  create-release:
-    name: Create Release
-    needs: [set-env, build-image, test-image, promote-image]
-    if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
-    uses: AlmaLinux/atomic-ci/.github/workflows/create-release.yml@v8
-    with:
-      image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"
-      version: ${{ needs.build-image.outputs.version }}
-      pretty-version: ${{ needs.build-image.outputs.redhat-version-id }}
-      latest-image-ref: "${{ needs.build-image.outputs.image-ref }}:${{ needs.set-env.outputs.LATEST_TAG }}"
-    permissions:
-      contents: write
+      - name: Build Image
+        id: build_image
+        uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2
+        with:
+          containerfiles: |
+            ./Containerfile
+          # Postfix image name with -custom to make it a little more descriptive
+          # Syntax: https://docs.github.com/en/actions/learn-github-actions/expressions#format
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          oci: false
+          build-args: |
+            IMAGE_NAME=${{ env.IMAGE_NAME }}
+            IMAGE_REGISTRY=${{ env.IMAGE_REGISTRY }}
+
+      # Rechunk is a script that we use on Universal Blue to make sure there isnt a single huge layer when your image gets published.
+      # This does not make your image faster to download, just provides better resumability and fixes a few errors.
+      # Documentation for Rechunk is provided on their github repository at https://github.com/hhd-dev/rechunk
+      # You can enable it by uncommenting the following lines:
+      #- name: Run Rechunker
+      #  id: rechunk
+      #  uses: hhd-dev/rechunk@f153348d8100c1f504dec435460a0d7baf11a9d2 # v1.1.1
+      #  with:
+      #    rechunk: 'ghcr.io/hhd-dev/rechunk:v1.0.1'
+      #    ref: "containers-storage:${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}"
+      #    prev-ref: "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}"
+      #    skip_compression: true
+      #    labels: ${{ steps.metadata.outputs.labels }} # Rechunk strips out all the labels during build, this needs to be reapplied here with newline separator
+
+      # This is necessary so that the podman socket can find the rechunked image on its storage
+      #- name: Load in podman and tag
+      #  run: |
+      #    IMAGE=$(podman pull ${{ steps.rechunk.outputs.ref }})
+      #    sudo rm -rf ${{ steps.rechunk.outputs.output }}
+      #    for tag in ${{ steps.metadata.outputs.tags }}; do
+      #      podman tag $IMAGE ${{ env.IMAGE_NAME }}:$tag
+      #    done
+
+      # These `if` statements are so that pull requests for your custom images do not make it publish any packages under your name without you knowing
+      # They also check if the runner is on the default branch so that things like the merge queue (if you enable it), are going to work
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push To GHCR
+        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2
+        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        id: push
+        env:
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_PASSWORD: ${{ github.token }}
+        with:
+          registry: ${{ env.IMAGE_REGISTRY }}
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ steps.metadata.outputs.tags }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+
+      # This section is optional and only needs to be enabled if you plan on distributing
+      # your project for others to consume. You will need to create a public and private key
+      # using Cosign and save the private key as a repository secret in Github for this workflow
+      # to consume. For more details, review the image signing section of the README.
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@d7543c93d881b35a8faa02e8e3605f69b7a1ce62 # v3.10.0
+        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+
+      - name: Sign container image
+        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        run: |
+          IMAGE_FULL="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}"
+          for tag in ${{ steps.metadata.outputs.tags }}; do
+            cosign sign -y --key env://COSIGN_PRIVATE_KEY $IMAGE_FULL:$tag
+          done
+        env:
+          TAGS: ${{ steps.push.outputs.digest }}
+          COSIGN_EXPERIMENTAL: false
+          COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
