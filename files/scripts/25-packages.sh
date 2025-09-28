@@ -35,7 +35,6 @@ dnf -y install \
   libvirt-daemon-kvm \
   libvirt-nss \
   libguestfs \
-  virtio-win \
   virt-install \
   virt-viewer \
   virt-manager \
