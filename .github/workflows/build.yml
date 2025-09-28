@@ -4,21 +4,16 @@ on:
   pull_request:
     branches:
       - main
-  schedule:
-    - cron: '05 05 * * *'  # 05:05am UTC everyday
+      - lts
   push:
     branches:
       - main
       - lts
-      - test
     paths-ignore:
       - '**/README.md'
   workflow_dispatch:
-
-env:
-  IMAGE_DESC: "Atomic Kitten"
-  IMAGE_NAME: "${{ github.event.repository.name }}"
-  IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"
+  schedule:
+    - cron: '0 5 */2 * *' # every other day (05:00 UTC)
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -34,30 +29,33 @@ jobs:
       packages: write
       id-token: write
 
+    env:
+      IMAGE_NAME: "${{ github.event.repository.name }}"
+      IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"
+
     steps:
       - name: Prepare environment
         run: |
           echo "IMAGE_REGISTRY=${IMAGE_REGISTRY,,}" >> ${GITHUB_ENV}
           echo "IMAGE_NAME=${IMAGE_NAME,,}" >> ${GITHUB_ENV}
-          # Set branch-based tags
-          if [ "${GITHUB_REF##*/}" = "main" ]; then
+          BRANCH="${{ github.ref_name }}"
+          if [ "$BRANCH" = "main" ]; then
             echo "DEFAULT_TAG=latest" >> ${GITHUB_ENV}
-          elif [ "${GITHUB_REF##*/}" = "lts" ]; then
+          elif [ "$BRANCH" = "lts" ]; then
             echo "DEFAULT_TAG=lts" >> ${GITHUB_ENV}
-          elif [ "${GITHUB_REF##*/}" = "test" ]; then
+          elif [ "$BRANCH" = "test" ]; then
             echo "DEFAULT_TAG=test" >> ${GITHUB_ENV}
           else
             echo "DEFAULT_TAG=dev" >> ${GITHUB_ENV}
           fi
-          # Set date tag
           echo "DATE_TAG=$(date -u +%Y%m%d)" >> ${GITHUB_ENV}
 
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        uses: actions/checkout@v4
 
       - name: Build Image
         id: build_image
-        uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2
+        uses: redhat-actions/buildah-build@v2
         with:
           containerfiles: |
             ./Containerfile
@@ -66,14 +64,13 @@ jobs:
             ${{ env.DEFAULT_TAG }}
             ${{ env.DEFAULT_TAG }}.${{ env.DATE_TAG }}
             ${{ env.DATE_TAG }}
-          oci: false
+          oci: true
           build-args: |
             IMAGE_NAME=${{ env.IMAGE_NAME }}
             IMAGE_REGISTRY=${{ env.IMAGE_REGISTRY }}
 
-      # Login and push steps
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@v3
         if: github.event_name != 'pull_request'
         with:
           registry: ghcr.io
@@ -81,12 +78,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push To GHCR
-        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2
+        uses: redhat-actions/push-to-registry@v2
         if: github.event_name != 'pull_request'
         id: push
         env:
           REGISTRY_USER: ${{ github.actor }}
-          REGISTRY_PASSWORD: ${{ github.token }}
+          REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         with:
           registry: ${{ env.IMAGE_REGISTRY }}
           image: ${{ env.IMAGE_NAME }}
@@ -98,7 +95,7 @@ jobs:
           password: ${{ env.REGISTRY_PASSWORD }}
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@d7543c93d881b35a8faa02e8e3605f69b7a1ce62 # v3.10.0
+        uses: sigstore/cosign-installer@v3.10.0
         if: github.event_name != 'pull_request'
 
       - name: Sign container image
