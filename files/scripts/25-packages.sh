@@ -4,11 +4,11 @@ set -xeuo pipefail
 
 # Install stuff
 dnf -y install \
+   container-tools \
    powertop \
    fuse \
    steam-devices \
    distrobox \
-   buildah \
    fastfetch \
    nvtop \
    btop \
@@ -36,7 +36,6 @@ dnf -y install \
   libvirt-nss \
   libguestfs \
   virt-install \
-  virt-viewer \
   virt-manager \
   cockpit-machines
   
