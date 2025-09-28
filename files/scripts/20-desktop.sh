@@ -32,7 +32,7 @@ dnf -y install --enablerepo=epel-multimedia \
     avif-pixbuf-loader
 
 # "Workstation" package group with some trimmings
-dnf group install -y "Workstation" \
+dnf group install -y --nobest "Workstation" \
     --exclude=setroubleshoot,console-login-helper-messages,PackageKit,PackageKit-command-not-found,redhat-flatpak-repo,firefox
 
 dnf -y install \
