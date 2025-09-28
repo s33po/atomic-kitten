@@ -6,7 +6,7 @@ COPY files/scripts /build_files/
 COPY *.pub /keys/
 
 # Base Image
-FROM quay.io/almalinuxorg/almalinux-bootc:10-kitten@sha256:7dc26ac7719fcc5bc5c795da5a8d30c43f2340c7dcfbd84695c6dfc636dfc60a
+FROM quay.io/centos-bootc/centos-bootc:c10s
 
 ARG IMAGE_NAME
 ARG IMAGE_REGISTRY
@@ -16,7 +16,6 @@ ENV IMAGE_REGISTRY=${IMAGE_REGISTRY}
 
 RUN --mount=type=tmpfs,dst=/opt \
     --mount=type=tmpfs,dst=/tmp \
-    --mount=type=tmpfs,dst=/var/tmp \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
     /ctx/build_files/build.sh
 

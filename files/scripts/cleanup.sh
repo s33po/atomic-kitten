@@ -10,9 +10,7 @@ shopt -s extglob
 
 dnf clean all
 
-# Clean /var without removing mounted tmpfs directories
-rm -rf /var/* /var/.* 2>/dev/null || true
-rm -rf /.gitkeep /boot
+rm -rf /.gitkeep /var /boot
 mkdir -p /boot /var
 
 # Make /usr/local writeable
