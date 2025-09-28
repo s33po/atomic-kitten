@@ -51,6 +51,12 @@ jobs:
           echo "date-tag=$(date -u +%Y%m%d)" >> $GITHUB_OUTPUT
           echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
 
+      - name: Get major version from Containerfile
+        id: version
+        run: |
+          VERSION_MAJOR=$(grep 'FROM.*:.*-kitten' Containerfile | sed 's/.*:\([0-9]*\)-.*/\1/')
+          echo "version_major=$VERSION_MAJOR" >> $GITHUB_OUTPUT
+
       - name: Checkout
         uses: actions/checkout@v4.2.0
         with:
@@ -64,6 +70,11 @@ jobs:
           # Create insecure policy for local builds (required for bootc)
           echo '{"default":[{"type":"insecureAcceptAnything"}]}' | sudo tee /etc/containers/policy.json
 
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+
       - name: Generate build metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -76,7 +87,7 @@ jobs:
             org.opencontainers.image.created=${{ steps.tag.outputs.timestamp }}
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.version=${{ steps.tag.outputs.default-tag }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version_major }}.${{ steps.tag.outputs.date-tag }}.1
             containers.bootc=1
             atomic-kitten.commit=${{ github.sha }}
             atomic-kitten.branch=${{ github.ref_name }}
@@ -86,30 +97,31 @@ jobs:
 
       - name: Build bootc image
         id: build
-        uses: redhat-actions/buildah-build@v2
-        with:
-          containerfiles: |
-            ./Containerfile
-          image: ${{ env.IMAGE_NAME }}
-          tags: |
-            ${{ steps.tag.outputs.default-tag }}
-            ${{ steps.tag.outputs.default-tag }}.${{ steps.tag.outputs.date-tag }}
-          labels: ${{ steps.meta.outputs.labels }}
-          oci: true
-          extra-args: |
-            --pull=always
-            --security-opt=label=disable
-          build-args: |
-            IMAGE_NAME=${{ env.IMAGE_NAME }}
-            IMAGE_REGISTRY=${{ env.IMAGE_REGISTRY }}
+        run: |
+          set -euo pipefail
+          echo "::group::Build Image"
+          sudo podman build \
+            --security-opt=label=disable \
+            --cap-add=all \
+            --device /dev/fuse \
+            --pull=always \
+            --iidfile /tmp/image-id \
+            --build-arg IMAGE_NAME=${{ env.IMAGE_NAME }} \
+            --build-arg IMAGE_REGISTRY=${{ env.IMAGE_REGISTRY }} \
+            -t ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.default-tag }} \
+            -t ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.default-tag }}.${{ steps.tag.outputs.date-tag }} \
+            -f ./Containerfile \
+            .
+          IMAGE_ID=$(cat /tmp/image-id)
+          echo "image-id=$IMAGE_ID" >> $GITHUB_OUTPUT
+          echo "::endgroup::"
 
       - name: Validate bootc image
         run: |
-          # Test that the image is a valid bootc container
           set -euo pipefail
           echo "🔍 Running bootc container lint validation..."
-          podman run --rm --security-opt=label=disable \
-            localhost/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.default-tag }} \
+          sudo podman run --rm --security-opt=label=disable \
+            ${{ steps.build.outputs.image-id }} \
             bootc container lint
           echo "✅ Bootc validation passed"
 
