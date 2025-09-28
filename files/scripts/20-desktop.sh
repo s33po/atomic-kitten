@@ -36,6 +36,7 @@ dnf group install -y "Workstation" \
     --exclude=setroubleshoot,console-login-helper-messages,PackageKit,PackageKit-command-not-found,redhat-flatpak-repo,firefox
 
 dnf -y install \
+    container-tools \
     systemd-container \
     system-reinstall-bootc
 
