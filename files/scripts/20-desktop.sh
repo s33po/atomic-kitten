@@ -33,7 +33,7 @@ dnf -y install --enablerepo=epel-multimedia \
 
 # "Workstation" package group with some trimmings
 dnf group install -y "Workstation" \
-    --exclude=setroubleshoot,console-login-helper-messages,PackageKit,redhat-flatpak-repo,firefox
+    --exclude=setroubleshoot,console-login-helper-messages,PackageKit,PackageKit-command-not-found,redhat-flatpak-repo,firefox
 
 dnf -y install \
     systemd-container \
