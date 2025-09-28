@@ -27,12 +27,16 @@ dnf -y install --enablerepo=epel-multimedia \
     ffmpegthumbnailer \
     libheif \
     libwebp \
+    gdk-pixbuf2-modules-extra \
     webp-pixbuf-loader \
     avif-pixbuf-loader
 
-# "Workstation" package group includes all the basics for a desktop system
-dnf group install -y \
-    "Workstation"
+# "Workstation" package group with some trimmings
+dnf -y group install "Workstation" \
+    -x setroubleshoot \
+    -x console-login-helper-messages \
+    -x PackageKit \
+    -x firefox
 
 dnf -y install \
     systemd-container \
@@ -40,6 +44,3 @@ dnf -y install \
 
 systemctl enable gdm
 systemctl set-default graphical.target
-
-# Remove some unnecessary packages
-dnf -y remove setroubleshoot console-login-helper-messages PackageKit redhat-flatpak-repo firefox
