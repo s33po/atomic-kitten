@@ -100,11 +100,8 @@ jobs:
         run: |
           set -euo pipefail
           echo "::group::Build Image"
-          sudo podman build \
-            --security-opt=label=disable \
-            --cap-add=all \
-            --device /dev/fuse \
-            --pull=always \
+          podman build \
+            --pull=newer \
             --iidfile /tmp/image-id \
             --build-arg IMAGE_NAME=${{ env.IMAGE_NAME }} \
             --build-arg IMAGE_REGISTRY=${{ env.IMAGE_REGISTRY }} \
@@ -120,7 +117,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "🔍 Running bootc container lint validation..."
-          sudo podman run --rm --security-opt=label=disable \
+          podman run --rm \
             ${{ steps.build.outputs.image-id }} \
             bootc container lint
           echo "✅ Bootc validation passed"
