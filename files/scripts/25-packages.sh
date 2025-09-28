@@ -29,16 +29,15 @@ dnf -y install \
    powerline-fonts
 
 # Virtualization
+dnf group install -y \
+   "Virtualization Host"
+
 dnf -y install \
-  qemu-kvm \
-  libvirt \
-  libvirt-daemon-kvm \
-  libvirt-nss \
-  libguestfs \
-  virt-install \
-  virt-viewer \
-  virt-manager \
-  cockpit-machines
+   libvirt-daemon-kvm \
+   libvirt-nss \
+   virt-install \
+   virt-manager \
+   cockpit-machines
   
 ### External repos ###
 
