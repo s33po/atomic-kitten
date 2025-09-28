@@ -29,18 +29,18 @@ dnf -y install \
    powerline-fonts
 
 # Virtualization
-dnf group install -y \
-	"Virtualization Host"
-
 dnf -y install \
+  qemu-kvm \
   libvirt \
   libvirt-daemon-kvm \
   libvirt-nss \
+  libguestfs \
+  virtio-win \
   virt-install \
+  virt-viewer \
   virt-manager \
   cockpit-machines
   
-
 ### External repos ###
 
 # VSCode
