@@ -10,6 +10,7 @@ shopt -s extglob
 
 dnf clean all
 
+umount /var/tmp || true
 rm -rf /.gitkeep /var /boot
 mkdir -p /boot /var
 
