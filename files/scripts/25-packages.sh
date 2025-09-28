@@ -4,7 +4,6 @@ set -xeuo pipefail
 
 # Install stuff
 dnf -y install \
-   container-tools \
    powertop \
    fuse \
    steam-devices \
