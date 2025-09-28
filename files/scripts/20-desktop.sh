@@ -32,12 +32,8 @@ dnf -y install --enablerepo=epel-multimedia \
     avif-pixbuf-loader
 
 # "Workstation" package group with some trimmings
-dnf -y install "@Workstation" \
-    -x redhat-flatpak-repo
-    -x setroubleshoot \
-    -x console-login-helper-messages \
-    -x PackageKit \
-    -x firefox
+dnf group install -y "Workstation" \
+    --exclude=setroubleshoot,console-login-helper-messages,PackageKit,redhat-flatpak-repo,firefox
 
 dnf -y install \
     systemd-container \
