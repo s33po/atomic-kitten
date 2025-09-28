@@ -7,9 +7,9 @@ An opinionated atomic workstation based on the AlmaLinux OS 10 Kitten `bootc` im
 - Backported GNOME 48 from the CentOS Hyperscale SIG  
 - Newer mainline kernel from the CentOS Kmods SIG  
   - Intention to track the next LTS kernel (most likely 6.18) when available  
-- Multimedia codecs from Negativo17  
+- Non-free multimedia codecs from Negativo17  
 - Firefox ESR removed in favor of the Flatpak version  
-- Full virtualization host support and (partial) AppImage support
+- Virtualization and AppImage support
 - Web-based system administration via Cockpit  
 - Visual Studio Code included in the image  
 - Curated set of tools, utilities, and fonts  
