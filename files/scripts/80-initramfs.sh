@@ -4,10 +4,20 @@ set -xeuo pipefail
 
 # Search for the latest installed kernel version:
 KERNEL_SUFFIX=""
-QUALIFIED_KERNEL=$(rpm -qa | \
-  grep -P 'kernel-(|'"$KERNEL_SUFFIX"'-)(\d+\.\d+\.\d+)' | \
-  sed -E 's/kernel-(|'"$KERNEL_SUFFIX"'-)//' | \
+QUALIFIED_KERNEL=$(rpm -q kernel${KERNEL_SUFFIX:+-}${KERNEL_SUFFIX} | \
+  sed -E 's/kernel(-'"$KERNEL_SUFFIX"')?-(.*)/\2/' | \
   sort -V | tail -n 1)
 
-# Generate initramfs for the newest kernel:
-usr/bin/dracut --no-hostonly --kver "$QUALIFIED_KERNEL" --reproducible --zstd -v --add ostree -f "/lib/modules/$QUALIFIED_KERNEL/initramfs.img"
+echo "Generating initramfs for kernel version: $QUALIFIED_KERNEL"
+
+# Generate initramfs for the newest kernel with parallel jobs for CI speed
+INITRAMFS_PATH="/lib/modules/$QUALIFIED_KERNEL/initramfs.img"
+/usr/bin/dracut --no-hostonly --kver "$QUALIFIED_KERNEL" --reproducible --zstd -v --add ostree --jobs $(nproc) -f "$INITRAMFS_PATH"
+
+# Validate the initramfs was created successfully
+if [[ ! -s "$INITRAMFS_PATH" ]]; then
+  echo "Error: Initramfs generation failed or produced an empty file at $INITRAMFS_PATH"
+  exit 1
+fi
+
+echo "Initramfs generation completed successfully at $INITRAMFS_PATH"

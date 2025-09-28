@@ -9,11 +9,7 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
-    ignore:
-      - dependency-name: "*"
-        update-types:
-          - "version-update:semver-minor"
-          - "version-update:semver-patch"
+    labels: ["dependencies"]
     target-branch: "main"
     
   # GitHub Actions updates for main
@@ -26,6 +22,7 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "actions"
+    labels: ["dependencies"]
     target-branch: "main"
 
   # Base image updates for lts
@@ -37,11 +34,7 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
-    ignore:
-      - dependency-name: "*"
-        update-types:
-          - "version-update:semver-minor"
-          - "version-update:semver-patch"
+    labels: ["dependencies"]
     target-branch: "lts"
 
   # GitHub Actions updates for lts
@@ -54,4 +47,5 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "actions"
+    labels: ["dependencies"]
     target-branch: "lts"

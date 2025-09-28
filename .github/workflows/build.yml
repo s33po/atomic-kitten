@@ -1,5 +1,5 @@
 ---
-name: Build image
+name: Build bootc image
 on:
   pull_request:
     branches:
@@ -9,101 +9,143 @@ on:
     branches:
       - main
       - lts
+      - test
     paths-ignore:
       - '**/README.md'
   workflow_dispatch:
   schedule:
-    - cron: '0 5 */2 * *' # every other day (05:00 UTC)
+    - cron: '0 5 */2 * *'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
+env:
+  IMAGE_NAME: ${{ github.event.repository.name }}
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+
 jobs:
   build_push:
-    name: Build and push image
+    name: Build and push bootc image
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
 
     permissions:
       contents: read
       packages: write
       id-token: write
 
-    env:
-      IMAGE_NAME: "${{ github.event.repository.name }}"
-      IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"
-
     steps:
-      - name: Prepare environment
+      - name: Set branch-based tags
+        id: tag
         run: |
-          echo "IMAGE_REGISTRY=${IMAGE_REGISTRY,,}" >> ${GITHUB_ENV}
-          echo "IMAGE_NAME=${IMAGE_NAME,,}" >> ${GITHUB_ENV}
-          BRANCH="${{ github.ref_name }}"
-          if [ "$BRANCH" = "main" ]; then
-            echo "DEFAULT_TAG=latest" >> ${GITHUB_ENV}
-          elif [ "$BRANCH" = "lts" ]; then
-            echo "DEFAULT_TAG=lts" >> ${GITHUB_ENV}
-          elif [ "$BRANCH" = "test" ]; then
-            echo "DEFAULT_TAG=test" >> ${GITHUB_ENV}
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "default-tag=latest" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" = "lts" ]; then
+            echo "default-tag=lts" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" = "test" ]; then
+            echo "default-tag=test" >> $GITHUB_OUTPUT
           else
-            echo "DEFAULT_TAG=dev" >> ${GITHUB_ENV}
+            echo "default-tag=dev" >> $GITHUB_OUTPUT
           fi
-          echo "DATE_TAG=$(date -u +%Y%m%d)" >> ${GITHUB_ENV}
+          echo "date-tag=$(date -u +%Y%m%d)" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.0
+        with:
+          fetch-depth: 0
 
-      - name: Build Image
-        id: build_image
+      - name: Setup container environment for bootc builds
+        run: |
+          # Setup proper container storage and policies for bootc
+          sudo mkdir -p /var/lib/containers
+          sudo mkdir -p /etc/containers
+          # Create insecure policy for local builds (required for bootc)
+          echo '{"default":[{"type":"insecureAcceptAnything"}]}' | sudo tee /etc/containers/policy.json
+
+      - name: Generate build metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.title=${{ env.IMAGE_NAME }}
+            org.opencontainers.image.description=Atomic Kitten
+            org.opencontainers.image.vendor=${{ github.repository_owner }}
+            org.opencontainers.image.created=${{ steps.tag.outputs.timestamp }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.tag.outputs.default-tag }}
+            containers.bootc=1
+            atomic-kitten.commit=${{ github.sha }}
+            atomic-kitten.branch=${{ github.ref_name }}
+          tags: |
+            type=raw,value=${{ steps.tag.outputs.default-tag }}
+            type=raw,value=${{ steps.tag.outputs.default-tag }}.${{ steps.tag.outputs.date-tag }}
+
+      - name: Build bootc image
+        id: build
         uses: redhat-actions/buildah-build@v2
         with:
           containerfiles: |
             ./Containerfile
           image: ${{ env.IMAGE_NAME }}
           tags: |
-            ${{ env.DEFAULT_TAG }}
-            ${{ env.DEFAULT_TAG }}.${{ env.DATE_TAG }}
-            ${{ env.DATE_TAG }}
+            ${{ steps.tag.outputs.default-tag }}
+            ${{ steps.tag.outputs.default-tag }}.${{ steps.tag.outputs.date-tag }}
+          labels: ${{ steps.meta.outputs.labels }}
           oci: true
+          extra-args: |
+            --pull=always
+            --security-opt=label=disable
+            --tmpfs=/tmp:rw,noexec,nosuid
+            --tmpfs=/var/tmp:rw,noexec,nosuid
           build-args: |
             IMAGE_NAME=${{ env.IMAGE_NAME }}
             IMAGE_REGISTRY=${{ env.IMAGE_REGISTRY }}
 
+      - name: Validate bootc image
+        run: |
+          # Test that the image is a valid bootc container
+          set -euo pipefail
+          echo "🔍 Running bootc container lint validation..."
+          podman run --rm --security-opt=label=disable \
+            localhost/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.default-tag }} \
+            bootc container lint
+          echo "✅ Bootc validation passed"
+
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v3.3.0
         if: github.event_name != 'pull_request'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push To GHCR
+      - name: Push image to GHCR
         uses: redhat-actions/push-to-registry@v2
         if: github.event_name != 'pull_request'
         id: push
-        env:
-          REGISTRY_USER: ${{ github.actor }}
-          REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         with:
           registry: ${{ env.IMAGE_REGISTRY }}
           image: ${{ env.IMAGE_NAME }}
           tags: |
-            ${{ env.DEFAULT_TAG }}
-            ${{ env.DEFAULT_TAG }}.${{ env.DATE_TAG }}
-            ${{ env.DATE_TAG }}
-          username: ${{ env.REGISTRY_USER }}
-          password: ${{ env.REGISTRY_PASSWORD }}
+            ${{ steps.tag.outputs.default-tag }}
+            ${{ steps.tag.outputs.default-tag }}.${{ steps.tag.outputs.date-tag }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.10.0
+        uses: sigstore/cosign-installer@v3.7.0
         if: github.event_name != 'pull_request'
 
-      - name: Sign container image
+      - name: Sign image
         if: github.event_name != 'pull_request'
         run: |
           IMAGE_FULL="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}"
-          for tag in ${{ env.DEFAULT_TAG }} ${{ env.DEFAULT_TAG }}.${{ env.DATE_TAG }} ${{ env.DATE_TAG }}; do
-            cosign sign -y --key env://COSIGN_PRIVATE_KEY $IMAGE_FULL:$tag
+          for tag in ${{ steps.tag.outputs.default-tag }} ${{ steps.tag.outputs.default-tag }}.${{ steps.tag.outputs.date-tag }}; do
+            cosign sign -y --key env://COSIGN_PRIVATE_KEY ${IMAGE_FULL}:${tag}
           done
         env:
           COSIGN_EXPERIMENTAL: false

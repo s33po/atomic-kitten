@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ouex pipefail
+set -xeuo pipefail
 
 CONTEXT_PATH="$(realpath "$(dirname "$0")/..")" # should return /ctx
 BUILD_SCRIPTS_PATH="$(realpath "$(dirname "$0")")"

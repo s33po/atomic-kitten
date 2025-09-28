@@ -8,5 +8,8 @@ systemctl enable podman.socket
 systemctl enable cockpit.socket
 systemctl enable libvirtd.service
 
+# Mask atd.service to prevent failures
+systemctl mask atd.service
+
 # Disable lastlog display 
 authselect enable-feature with-silent-lastlog
