@@ -12,7 +12,7 @@ echo "Generating initramfs for kernel version: $QUALIFIED_KERNEL"
 
 # Generate initramfs for the newest kernel
 INITRAMFS_PATH="/lib/modules/$QUALIFIED_KERNEL/initramfs.img"
-/usr/bin/dracut --no-hostonly --kver "$QUALIFIED_KERNEL" --reproducible --zstd -v --add ostree --omit /root -f "$INITRAMFS_PATH"
+/usr/bin/dracut --no-hostonly --kver "$QUALIFIED_KERNEL" --reproducible --zstd -v --add ostree -f "$INITRAMFS_PATH"
 
 # Validate the initramfs was created successfully
 if [[ ! -s "$INITRAMFS_PATH" ]]; then
