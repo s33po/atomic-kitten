@@ -5,6 +5,9 @@ set -xeuo pipefail
 CONTEXT_PATH="$(realpath "$(dirname "$0")/..")" # should return /ctx
 BUILD_SCRIPTS_PATH="$(realpath "$(dirname "$0")")"
 
+# Skip kernel install during package installation in rpm-ostree
+export OSTREE_SKIP_KERNEL_INSTALL=1
+
 printf "::group:: === Copying files ===\n"
 cp -avf "${CONTEXT_PATH}/system_files/." /
 printf "::endgroup::\n"

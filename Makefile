@@ -1,6 +1,6 @@
 # Local testing Makefile for atomic-kitten
 SUDO = sudo
-PODMAN = $(SUDO) podman
+PODMAN = podman
 
 IMAGE_NAME ?= localhost/myimage
 CONTAINER_FILE ?= ./Containerfile
