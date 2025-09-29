@@ -2,15 +2,6 @@
 
 set -xeuo pipefail
 
-# Enable centos-bootc compose repos
-curl --retry 3 -Lo /etc/yum.repos.d/compose.repo https://gitlab.com/redhat/centos-stream/containers/bootc/-/raw/c10s/cs.repo
-sed -r \
-    -e 's@\[rhel-10-for-\$basearch-@[@' \
-    -e 's@-rpms\]@-compose]@' \
-    -e 's@- (BaseOS|AppStream)@& - Compose@' \
-    -e 's@/usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official@/etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial-SHA256@' \
-    -i /etc/yum.repos.d/compose.repo
-
 dnf -y remove subscription-manager
 
 dnf config-manager --set-enabled crb
@@ -43,9 +34,6 @@ curl --retry 3 -o /etc/flatpak/remotes.d/flathub.flatpakrepo "https://dl.flathub
 
 # Disable lastlog display 
 authselect enable-feature with-silent-lastlog
-
-# Disable compose repos
-dnf config-manager --set-disabled baseos-compose,appstream-compose
 
 # Clean up
 dnf clean all
