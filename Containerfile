@@ -1,8 +1,10 @@
 FROM scratch AS context
 
 ARG MAJOR_VERSION="${MAJOR_VERSION:-c10s}"
+ARG IMAGE_NAME
+ARG SHA_HEAD_SHORT
 
-FROM quay.io/centos-bootc/centos-bootc:c10s
+FROM quay.io/centos-bootc/centos-bootc:${MAJOR_VERSION}
 
 # Build stuff
 COPY build.sh /tmp/build.sh

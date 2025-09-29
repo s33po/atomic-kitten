@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: "atomic-kitten"  # the name of the image produced by this build, matches repo names
+  IMAGE_NAME: "atomic-kitten"
   IMAGE_DESC: "CentOS Stream-based bootc workstation"
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"
   DEFAULT_TAG: "dev"
@@ -53,6 +53,7 @@ jobs:
           # https://artifacthub.io/docs/topics/repositories/container-images/
           # https://linux.die.net/man/1/date
           echo "date=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)" >> $GITHUB_OUTPUT
+          echo "SHA_HEAD_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Image Metadata
         uses: docker/metadata-action@369eb591f429131d6889c46b94e711f089e6ca96 # v5
@@ -76,6 +77,7 @@ jobs:
             org.opencontainers.image.url=https://github.com/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
             org.opencontainers.image.vendor=${{ github.repository_owner }}
             org.opencontainers.image.version=${{ env.CENTOS_VERSION }}
+            org.opencontainers.image.revision=${{ steps.date.outputs.SHA_HEAD_SHORT }}
             containers.bootc=1
           sep-tags: " "
           sep-annotations: " "
@@ -115,7 +117,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Push the image to GHCR (Image Registry)
       - name: Push To GHCR
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/dev'
@@ -125,11 +126,6 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ steps.metadata.outputs.tags }}
 
-      # This section is optional and only needs to be enabled in you plan on distributing
-      # your project to others to consume. You will need to create a public and private key
-      # using Cosign and save the private key as a repository secret in Github for this workflow
-      # to consume. For more details, review the image signing section of the README.
-
       - name: Install Cosign
         uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/dev'
@@ -137,7 +133,7 @@ jobs:
       - name: Sign container image
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/dev'
         run: |
-          IMAGE_FULL="${{ env.IMAGE_REGISTRY }}/${IMAGE_NAME}"
+          IMAGE_FULL="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}"
           for tag in ${{ steps.metadata.outputs.tags }}; do
             cosign sign -y --key env://COSIGN_PRIVATE_KEY $IMAGE_FULL:$tag
           done
