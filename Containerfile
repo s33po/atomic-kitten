@@ -4,9 +4,9 @@ ARG MAJOR_VERSION
 ARG IMAGE_NAME
 ARG SHA_HEAD_SHORT
 
-ENV IMAGE_NAME=${IMAGE_NAME}
-
 FROM quay.io/centos-bootc/centos-bootc:${MAJOR_VERSION}
+
+ENV IMAGE_NAME=${IMAGE_NAME}
 
 # Build stuff
 COPY build.sh /tmp/build.sh
